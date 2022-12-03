@@ -4,6 +4,7 @@
 #define ToPriority(num) ((num) - ((num) < 'a' ? 38 : 96))
 int findChar(char *index, int len, char needle);
 int findInSecondHalf(char *index, int len);
+int ChallengeOne(char *line, int count, int *sum);
 
 int main(int argc, char *argv[]) {
   char const *const filename = argv[1];
@@ -16,15 +17,8 @@ int main(int argc, char *argv[]) {
     if (c != EOL)
       line[count] = c;
     else {
-      c = findInSecondHalf(line, count);
-      if (c > -1)
-        sum += ToPriority(c);
-      else {
-        printf("YO Not found in second part!");
-        return 1;
-      }
+      ChallengeOne(line, count, &sum);
       count = -1;
-      c = *line;
     };
   };
   if (count == 200) {
@@ -32,6 +26,19 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   printf("%i\n", sum);
+}
+
+int ChallengeOne(char *line, int count, int *sum) {
+  char c;
+  c = findInSecondHalf(line, count);
+  if (c > -1) {
+    *sum += ToPriority(c);
+    return 0;
+  }
+  else {
+    printf("YO Not found in second part!");
+    return -1;
+  }
 }
 
 int findInSecondHalf(char *index, int len) {
