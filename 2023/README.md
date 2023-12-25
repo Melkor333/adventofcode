@@ -7,3 +7,4 @@ Mostly developing on my mobile with [acode](https://acode.app/) and [termux](htt
 |1_1|solved|[eggex](https://www.oilshell.org/release/0.19.0/doc/eggex.html) ftw!
 |1_2|TODO|requires `_begin`/`_end` coming in 0.20.0|
 |2_1|solved|wrote my own `split`
+|2_2|solved|very simple addition!
