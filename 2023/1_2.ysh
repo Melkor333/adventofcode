@@ -1,0 +1,46 @@
+#!/usr/bin/env ysh
+
+var re = / ^ ![1-9]* ( [1-9] ) .* ( [1-9] ) ![1-9]* $ /
+var pre = / ^![0-9]* ( [0-9] ) /
+var post = / ( [0-9] ) ![0-9]* $/
+
+read --all < 1.in
+var input = _reply
+
+var numbers = :| xxxzeetttttttttttt one two three four five six seven eight nine |
+
+for i, number in (numbers) {
+  #echo "$i $number"
+  if (i === 0){
+    var numreg = / @number /
+  } else {
+    setvar numreg = / @numreg or @number /
+    # setvar input = $(write $input | sed "s/$number/$i/g")
+  }
+}
+echo "$numreg"
+proc replace_words (text) {
+  write $text
+  if (text ~ / @numreg / ) {
+    var number = _match(0)
+    write $[text[0:_begin(0)]]
+    = index(numbers, number)
+    write $[_match(0)]
+  }
+  write
+}
+for line in (split(input, $'\n')) {
+  replace_words $line
+}
+exit
+write $input
+
+var sum = 0
+for line in (split(input, $'\n')) {
+  if ( line ~ pre ) {
+    var p = _match(1)
+    call line ~ post
+    setvar sum = sum + int((p ++ _match(1)))
+    echo "$line $p $[_match(1)] $sum"
+} < 1.in
+echo $sum
