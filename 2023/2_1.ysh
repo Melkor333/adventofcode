@@ -1,0 +1,57 @@
+#/usr/bin/env ysh
+
+var max = {
+    "red": 12,
+    "green": 13,
+    "blue": 14
+}
+func split (str, d) {
+    var count = 1
+    var last = 0
+    var o = []
+    while (count < (len(str))) {
+        if (str[count] === d) {
+            call o->append(str[last:count])
+            setvar count += 1
+            setvar last = count
+        }
+        setvar count += 1
+    }
+    return (o)
+}
+
+var base_egg = / ( [0-9]* ) ' ' /
+
+var count = 0
+var sum = 0
+while read --line {
+    setvar count+=1
+    # remove "Game %n:"
+    #var games = _reply[5+len(str(count)):]
+#    write $games
+    var r = split(_reply, ";")
+    write --end '' (r[0])
+    var works = true
+    for s in @r {
+        for color in red green blue {
+          if (s ~ / @base_egg @color /) {
+              #write @[_match(0), _match(1)]
+              if (_match(1) > max[color]) {
+                  write "$count: $[_match(0)] higher than $[max[color]]"
+                  setvar works = false
+                  break
+              }
+            } #else {
+               #write "$s doesn't match $color"
+          #}
+        }
+        if (not works) {
+            break
+        }
+    }
+    if (works) {
+        write "$sum += $count"
+        setvar sum += count
+    }
+} < 2.in
+write sum is: $sum
