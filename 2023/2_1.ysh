@@ -12,11 +12,12 @@ func split (str, d) {
     while (count < (len(str))) {
         if (str[count] === d) {
             call o->append(str[last:count])
-            setvar count += 1
             setvar last = count
+            setvar count += 1
         }
         setvar count += 1
     }
+    call o->append(str[last:])
     return (o)
 }
 
@@ -30,9 +31,10 @@ while read --line {
     #var games = _reply[5+len(str(count)):]
 #    write $games
     var r = split(_reply, ";")
-    write --end '' (r[0])
+    #bwrite --end '' (r[0])
     var works = true
     for s in @r {
+        #write $s
         for color in red green blue {
           if (s ~ / @base_egg @color /) {
               #write @[_match(0), _match(1)]
@@ -41,9 +43,7 @@ while read --line {
                   setvar works = false
                   break
               }
-            } #else {
-               #write "$s doesn't match $color"
-          #}
+            }
         }
         if (not works) {
             break
