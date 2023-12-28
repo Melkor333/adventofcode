@@ -1,0 +1,78 @@
+#/usr/bin/env ysh
+
+var map = []
+source --builtin math.ysh
+while read --line {
+    call map->append(_reply)
+} < 3.in
+
+var rows = len(map)
+const DEBUG = true
+proc debug (...args) {
+    if (DEBUG) {
+        write --sep " " -- @args >&2
+    }
+}
+
+proc check_hash (;map, irow, col_begin, col_end) {
+    setvar col_begin = (max(col_begin-1, 0))
+    var row_begin = max(irow-1, 0)
+    setvar col_end = min(col_end+1, len(map[0]))
+    var row_end = min(irow+2, len(map))
+    #debug $irow $[map[row]] $row_begin $row_end $col_begin $col_end
+    for row in (row_begin .. row_end) {
+        #debug $row @[map[row], map[row][col_begin:col_end]]
+        #debug $row $col_begin $col_end
+        debug $[map[row][col_begin:col_end]]
+    }
+    for row in (row_begin .. row_end) {
+        #debug $row @[map[row], map[row][col_begin:col_end]]
+        if (map[row][col_begin:col_end] ~ / ! [ 0-9 '.' ] /) {
+            #debug "found #!"
+            return 0
+        }
+    }
+    return 1
+}
+
+proc find_part_nums(;map,row) {
+    var cur_part, col_begin = [0, 0]
+    var i = 0
+    while (i < len(map[row])) {
+        #debug OKKK $i $[len(map[row])]
+        while (map[row][i] ~ / [0-9] / ) {
+            #debug OKKK $i $[len(map[row])]
+            var c = map[row][i]
+            #debug $c
+            if (cur_part === 0) {
+                setvar col_begin = i
+                debug new
+            }
+            #debug O
+            setvar cur_part = (cur_part * 10) + int(c)
+            setvar i = i + 1
+            if (i === len(map[row])) {
+                break
+            }
+        }
+        if (cur_part > 0) {
+            debug var is $cur_part
+            try { check_hash (map, row, col_begin, i) }
+            if (_status === 0) {
+                write $cur_part #setvar sum = sum + cur_part
+            }
+            setvar cur_part = 0
+        } else {
+          setvar i = i+1
+        }
+    }
+}
+
+var finalsum = 0
+for row in (0 .. rows) {
+    find_part_nums (map, row)
+} | while read --line {
+    write --end '' "$_reply + $finalsum = " 
+    setvar finalsum = finalsum + _reply
+    write $finalsum
+}
