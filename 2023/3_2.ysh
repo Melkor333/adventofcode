@@ -1,0 +1,93 @@
+#/usr/bin/env ysh
+
+var map = []
+var gears = {}
+source --builtin math.ysh
+while read --line {
+    call map->append(_reply)
+} < 3.in
+
+var rows = len(map)
+const DEBUG = true
+proc debug (...args) {
+    if (DEBUG) {
+        write --sep " " -- @args >&2
+    }
+}
+
+proc add_to_gearlist (;x, y, num, gears) {
+    var key = "${x}_$y"
+    if (key in gears) {
+        call gears[key]->append(num)
+    } else {
+        setvar gears[key] = [num]
+    }
+}
+
+proc find_gears (;map, irow, col_begin, col_end, num, gears) {
+    setvar col_begin = (max(col_begin-1, 0))
+    var row_begin = max(irow-1, 0)
+    setvar col_end = min(col_end+1, len(map[0]))
+    var row_end = min(irow+2, len(map))
+    #debug $irow $[map[row]] $row_begin $row_end $col_begin $col_end
+    for row in (row_begin .. row_end) {
+        #debug $row @[map[row], map[row][col_begin:col_end]]
+        #debug $row $col_begin $col_end
+        debug $[map[row][col_begin:col_end]]
+    }
+    for row in (row_begin .. row_end) {
+        #debug $row @[map[row], map[row][col_begin:col_end]]
+        for column in (col_begin .. col_end) {
+            if (map[row][column] !~ / d or '.' /) {
+                #debug "found #!"
+                #return 0
+                add_to_gearlist (row, column, num, gears)
+            }
+        }
+    }
+}
+
+proc find_part_nums(;map,row,gears) {
+    var cur_part, col_begin = [0, 0]
+    var i = 0
+    while (i < len(map[row])) {
+        #debug OKKK $i $[len(map[row])]
+        while (map[row][i] ~ / [0-9] / ) {
+            #debug OKKK $i $[len(map[row])]
+            var c = map[row][i]
+            #debug $c
+            if (cur_part === 0) {
+                setvar col_begin = i
+                debug new
+            }
+            #debug O
+            setvar cur_part = (cur_part * 10) + int(c)
+            setvar i = i + 1
+            if (i === len(map[row])) {
+                break
+            }
+        }
+        if (cur_part > 0) {
+            debug var is $cur_part
+            find_gears (map, row, col_begin, i, cur_part, gears)
+            setvar cur_part = 0
+        } else {
+          setvar i = i+1
+        }
+    }
+}
+
+var finalsum = 0
+for row in (0 .. rows) {
+    find_part_nums (map, row, gears)
+}
+= gears
+var sum = 0
+for key, val in (gears) {
+    if (len(val) === 2) {
+        setvar sum = sum + val[0] * val[1]
+    } elif (len(val) >2) {
+        write wtf $key @var
+    }
+}
+write $sum
