@@ -1,4 +1,4 @@
-#/usr/bin/env ysh
+#!/usr/bin/env ysh
 
 var max = {
     "red": 12,

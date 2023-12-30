@@ -1,0 +1,25 @@
+#!/usr/bin/env ysh
+# run wit $file <input
+
+proc each {
+    writa $block
+}
+
+var sum = 0
+while read --line {
+    write -- $_reply
+    var wins, draws = _reply=>split("|")
+    setvar wins = wins=>split()
+    setvar draws = draws=>split()
+    var wincount = 0
+    for draw in @draws {
+        if (wins=>indexOf(draw) >=0) {
+            setvar wincount = wincount + 1
+        }
+    }
+    if (wincount > 0) {
+        write $[2 ** (wincount-1)]
+        setvar sum = sum + 2 ** (wincount-1)
+    }
+}
+write $sum
