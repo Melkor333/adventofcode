@@ -1,0 +1,67 @@
+#!/usr/bin/env ysh
+# run wit $file <input
+
+var sum = 0
+var cards = {}
+
+func add_card(cards, num, count) {
+    if (num in cards) {
+        setvar cards[num] = cards[num] + count
+    } else {
+        setvar cards[num] = count
+    }
+}
+
+const DEBUG = false
+proc debug (...args) {
+    if (DEBUG) {
+        write --sep " " -- @args >&2
+    }
+}
+
+exec < 4.in
+
+func values(d) {
+    var o = []
+    for i in (d) {
+        call o->append(d[i])
+    }
+    return (o)
+}
+
+func reduce(l, f) {
+    var prev = l[0]
+    for i in (l[1:]) {
+        setvar prev = f(prev, i)
+    }
+    return (prev)
+}
+func add(a, b) { return (a+b) }
+
+while read --line {
+    write -- $_reply
+    var wins, draws = _reply=>split("|")
+    setvar wins = wins=>split()
+    setvar draws = draws=>split()
+    var cur_card = int(wins[1][:-1])
+    if (str(cur_card) in cards) {
+        setvar cards[str(cur_card)] += 1
+    } else {
+        setvar cards[str(cur_card)] = 1
+    }
+    var wincount = 0
+    write --end " " "wins: "
+    for draw in @draws {
+        if (wins=>indexOf(draw) >=0) {
+            write --end " " $draw 
+            setvar wincount = wincount + 1
+        }
+    }
+    write " x $[cards[str(cur_card)]]"
+    for i in (1 .. wincount+1) {
+        debug add card $[cur_card+i]
+        call cards=>add_card(str(cur_card+i), cards[str(cur_card)])
+    }
+}
+
+= cards => values() => reduce(add)

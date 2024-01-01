@@ -1,46 +1,70 @@
 #!/usr/bin/env ysh
 
-var re = / ^ ![1-9]* ( [1-9] ) .* ( [1-9] ) ![1-9]* $ /
-var pre = / ^![0-9]* ( [0-9] ) /
-var post = / ( [0-9] ) ![0-9]* $/
-
-read --all < 1.in
-var input = _reply
+exec < 1.in
+const DEBUG = true
+proc debug (...args) {
+    if (DEBUG) {
+        write --sep " " @args >&2
+    }
+}
 
 var numbers = :| xxxzeetttttttttttt one two three four five six seven eight nine |
 
 for i, number in (numbers) {
   #echo "$i $number"
   if (i === 0){
-    var numreg = / @number /
+    var Numreg = / @number /
   } else {
-    setvar numreg = / @numreg or @number /
+    setvar Numreg = / Numreg or @number /
     # setvar input = $(write $input | sed "s/$number/$i/g")
   }
 }
-echo "$numreg"
-proc replace_words (text) {
-  write $text
-  if (text ~ / @numreg / ) {
-    var number = _match(0)
-    write $[text[0:_begin(0)]]
-    = index(numbers, number)
-    write $[_match(0)]
-  }
-  write
-}
-for line in (split(input, $'\n')) {
-  replace_words $line
-}
-exit
-write $input
 
+echo "$Numreg"
+proc replace_words (text) {
+  debug $text
+  debug --end "" 'fix: '
+  var lastend = 0
+  while (text ~ / @numreg / ) {
+    var number = _match(0)
+    #debug --end "" $[text[0:_start(0)]]
+    write --end "" $[text[0:_start(0)]]
+    write --end "" $[numbers=>indexOf(number)]
+    #debug --end "" $[numbers=>indexOf(number)]
+    setvar text = text[_end(0):]
+    setvar lastend = _end(0)
+  }
+  write $[text[lastend:]]
+}
+
+func w (n) {
+    if (str(n) ~ Numreg) {
+        return (str(numbers=>indexOf(n)))
+    } else {
+        return (str(n))
+    }
+}
+#for line in (split(input, $'\n')) {
+#  replace_words $line
+#}
+#write $input
 var sum = 0
-for line in (split(input, $'\n')) {
-  if ( line ~ pre ) {
-    var p = _match(1)
-    call line ~ post
-    setvar sum = sum + int((p ++ _match(1)))
-    echo "$line $p $[_match(1)] $sum"
-} < 1.in
+while read --line {
+    var first = true
+    var f = ''
+    var l = ""
+    var t = _reply
+    while ( t ~ / Numreg or [0-9] /) {
+        if (first) {
+            setvar f = _match(0)
+            setvar first = false
+        }
+        setvar l = _match(0)
+        setvar t = t[_start(0)+1:]
+    }
+    debug --end "" $_reply $f $l
+    var n = int(w(f) ++ w(l))
+    setvar sum = sum + n
+    debug " $n $sum"
+}
 echo $sum
