@@ -1,0 +1,63 @@
+#!/usr/bin/env ysh
+
+exec < 5.in
+
+func split (str, d) {
+    var count = 1
+    var last = 0
+    var o = []
+    while (count < (len(str))) {
+        if (str[count] === d) {
+            call o->append(str[last:count])
+            setvar last = count+1
+            setvar count += 1
+        }
+        setvar count += 1
+    }
+    call o->append(str[last:])
+    return (o)
+}
+
+var Re = / <capture d+ as dst> ' ' <capture d+ as src> ' ' <capture d+ as l> /
+
+read --line
+var seeds = _reply => split(":")[1] => split(" ")
+
+read --line
+echo $_reply
+
+# write map point
+while read --line {
+echo $_reply
+
+var ranges = []
+while read --line {
+    #sorting woud be nice
+    if (_reply ~ Re) {
+    call ranges->append([
+        float(_match("src")),
+        float(_match("dst")),
+        float(_match("l"))])
+    = [_match("src"),_match("dst"),_match("l")]
+    } else {
+        break
+    }
+}
+
+for i, s in @seeds {
+    var found = false
+    for r in (ranges) {
+        if (float(s) >= r[0] and float(s) < r[0] + r[2]) {
+            write --end "" -- "$s + ($[r[1]] - $[r[0]]) => "
+            setvar seeds[i] = float(s) + (r[1] - r[0])
+            write -- "$[seeds[i]]" 
+            setvar found = true
+        }
+    }
+    if (not found) {
+        write -- "$s => $[seeds[i]]"
+    }
+}
+}
+source --builtin math.ysh
+write -- $[seeds => min()]
