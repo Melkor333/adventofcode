@@ -12,3 +12,4 @@ Mostly developing on my mobile with [acode](https://acode.app/) and [termux](htt
 |3_2|solved|`for (x ~ bla) {}` would've been helpful…
 |4_1|solved|`proc (;;;block)` would've been cool and had some [confusion](https://oilshell.zulipchat.com/#narrow/stream/264891-oil-help/topic/weird.20echo.20and.20read.20behaviour.20in.20ysh)
 |4_2|solved| [Implemented dict=>values()](https://github.com/oilshell/oil/pull/1777)
+|5_1|solved|C++ ysh version on mobile has [too small integers AND FLOATS!](https://oilshell.zulipchat.com/#narrow/stream/121540-oil-discuss/topic/Advent.20of.20Code.3F) Had to use my server.

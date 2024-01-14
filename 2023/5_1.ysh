@@ -35,9 +35,9 @@ while read --line {
     #sorting woud be nice
     if (_reply ~ Re) {
     call ranges->append([
-        float(_match("src")),
-        float(_match("dst")),
-        float(_match("l"))])
+        int(_match("src")),
+        int(_match("dst")),
+        int(_match("l"))])
     = [_match("src"),_match("dst"),_match("l")]
     } else {
         break
@@ -47,9 +47,9 @@ while read --line {
 for i, s in @seeds {
     var found = false
     for r in (ranges) {
-        if (float(s) >= r[0] and float(s) < r[0] + r[2]) {
+        if (int(s) >= r[0] and int(s) < r[0] + r[2]) {
             write --end "" -- "$s + ($[r[1]] - $[r[0]]) => "
-            setvar seeds[i] = float(s) + (r[1] - r[0])
+            setvar seeds[i] = int(s) + (r[1] - r[0])
             write -- "$[seeds[i]]" 
             setvar found = true
         }
