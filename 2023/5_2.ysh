@@ -18,55 +18,68 @@ func split (str, d) {
     return (o)
 }
 
+# t = [BEGIN, END], shift is the amount to "nudge"
+func splitRange (arr, t) {
+    func b (a) { return a[0] }
+    func e (a) { return a[1] }
+    for i in (0 .. len(arr)) {
+        var r = arr[i]
+        # split beginning
+        if (b(r) < b(t) and e(r) > b(t)) {
+            setvar arr[i][0] = b(t)
+            call arr->append([b(r), b(t-1)])
+        }
+        
+    }
+}
+
 var Re = / <capture d+ as dst> ' ' <capture d+ as src> ' ' <capture d+ as l> /
 
 read --line
 var seed_list = _reply => split(":")[1] => split(" ")
+# array of arrays. [[BEGIN, END], [BEGIN, END]]
 var seeds = []
 var i = 0
 while (i < len(seed_list)) {
-    for j in (0 .. int(seed_list[i+1])) {
-        write --end " " $[seed_list[i]+j]
-        call seeds->append(seed_list[i]+j)
-    }
+    call seeds->append([int(seed_list[i]), seed_list[i]+seed_list[i+1]])
     setvar i += 2
 }
 = seeds
 read --line
 echo $_reply
-
+exit
 # write map point
 while read --line {
-echo $_reply
-
-var ranges = []
-while read --line {
-    #sorting woud be nice
-    if (_reply ~ Re) {
-    call ranges->append([
-        int(_match("src")),
-        int(_match("dst")),
-        int(_match("l"))])
-    = [_match("src"),_match("dst"),_match("l")]
-    } else {
-        break
-    }
-}
-
-for i, s in @seeds {
-    var found = false
-    for r in (ranges) {
-        if (int(s) >= r[0] and int(s) < r[0] + r[2]) {
-            write --end "" -- "$s + ($[r[1]] - $[r[0]]) => "
-            setvar seeds[i] = int(s) + (r[1] - r[0])
-            write -- "$[seeds[i]]" 
-            setvar found = true
+    echo $_reply
+    
+    var ranges = []
+    while read --line {
+        #sorting woud be nice
+        if (_reply ~ Re) {
+        call ranges->append([
+            int(_match("src")),
+            int(_match("dst")),
+            int(_match("l"))])
+        = [_match("src"),_match("dst"),_match("l")]
+        } else {
+            break
         }
     }
-    if (not found) {
-        write -- "$s => $[seeds[i]]"
+    
+    for i, s in @seeds {
+        var found = false
+        for r in (ranges) {
+            if (int(s) >= r[0] and int(s) < r[0] + r[2]) {
+                write --end "" -- "$s + ($[r[1]] - $[r[0]]) => "
+                setvar seeds[i] = int(s) + (r[1] - r[0])
+                write -- "$[seeds[i]]" 
+                setvar found = true
+            }
+        }
+        if (not found) {
+            write -- "$s => $[seeds[i]]"
+        }
     }
-}
 }
 source --builtin math.ysh
 write -- $[seeds => min()]
